@@ -1,0 +1,57 @@
+<html>
+
+<head>
+	<script src="https://aframe.io/releases/1.1.0/aframe.min.js"></script>
+</head>
+
+<body>
+	<script>
+		// register components
+		AFRAME.registerComponent('hello-world', {
+			schema: {
+				message: { type: 'string', default: 'World' }
+			},
+			init: function () {
+				// Closure to access fresh `this.data` from event handler context.
+				var _this = this;
+
+				// .init() is a good place to set up initial state and variables.
+				// Store a reference to the handler so we can later remove it.
+				this.eventHandlerFn = function () { console.log(_this.data.message); };
+			},
+			update: function (oldData) {
+				var data = this.data;
+				var el = this.el;
+
+				if (data.event) {
+					el.addEventListener(data.event, this.eventHandlerFn);
+				} else {
+					console.log(data.message);
+				}
+			}
+		});
+	</script>
+	<a-scene stats light="defaultLightsEnabled: false">
+		<a-assets>
+			<!-- register 3d assets -->
+			<a-asset-item id="smartphone" src="assets\3d\smartphone.gltf"></a-asset-item>
+
+			<!-- register mixins -->
+			<a-mixin id="turntable" animation="property: rotation; to: 0 360 0; dur: 3400; easing: linear; loop: true;"></a-mixin>
+		</a-assets>
+
+		<a-entity light="type: ambient; color: white;"></a-entity>
+		<a-entity camera position="0 1.6 0"></a-entity>
+		<a-entity position="0 1.6 -0.2" mixin="turntable">
+			<a-entity gltf-model="#smartphone" rotation="-45 0 0"></a-entity>
+		</a-entity>
+		<!-- <a-box hello-world="message: Judy" position="-1 0.5 -3" rotation="0 45 0" animation="property: position; to: -1 1.5 -3; dur: 1000; easing: linear; loop: true" color="#4CC3D9"></a-box> -->
+		<!-- <a-sphere position="0 1.25 -5" radius="1.25" segments-height="8" segments-radial="16" color="#EF2D5E"> -->
+		<!-- </a-sphere> -->
+		<!-- <a-cylinder position="1 0.75 -3" radius="0.5" height="1.5" segments-height="1" segments-radial="24" color="#FFC65D"></a-cylinder> -->
+		<!-- <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="#7BC8A4"></a-plane> -->
+		<!-- <a-sphere color="#ECECEC"></a-sphere> -->
+	</a-scene>
+</body>
+
+</html>

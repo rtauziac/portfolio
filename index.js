@@ -7,4 +7,8 @@ https.get('*', (req, res) => {
 	res.sendFile(path.join(__dirname + req.url))
 })
 
+https.get('/', (req, res) => {
+	res.sendFile(path.join(__dirname + '/index.html'))
+})
+
 https.listen()

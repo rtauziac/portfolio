@@ -2,7 +2,8 @@
 
 <head>
 	<link rel="icon" type="image/png" href="/favicon.png"/>
-	<script src="https://aframe.io/releases/1.1.0/aframe.min.js"></script>
+	<script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
+	<script src="aframe-particle-system-component.min.js/dist/aframe-particle-system-component.min.js"></script>
 </head>
 
 <body>
@@ -41,7 +42,7 @@
 				});
 			}
 		})
-		AFRAME.registerComponent('appear-bounce', {
+		AFRAME.registerComponent('start-button', {
 			//dependencies: ['raycaster'],
 			init: function () {
 				var el = this.el;
@@ -52,8 +53,8 @@
 						el.addEventListener('click', event => {
 							el.removeAttribute("animation__wave_down");
 							el.removeAttribute("animation__wave_up");
-							el.setAttribute("animation__spin", "property: rotation; to: 0 360 0; dur: 1800; easing: easeOutElastic; elasticity: 12;")
-							el.setAttribute("animation__unscale", "property: scale; to: 0 0 0; delay: 1200; dur: 600; easing: easeInExpo;")
+							el.setAttribute("animation__spin", "property: rotation; to: 0 360 0; dur: 1600; easing: easeOutElastic; elasticity: 12;")
+							el.setAttribute("animation__unscale", "property: scale; to: 0 0 0; delay: 1000; dur: 600; easing: easeInExpo;")
 						});
 						el.setAttribute("animation__wave_up", "property: position; to: 0 0.06 0; dur: 1200; easing: easeInOutQuad;");
 					}
@@ -64,6 +65,9 @@
 					else if (event.detail.name === "animation__wave_up") {
 						el.removeAttribute("animation__wave_up");
 						el.setAttribute("animation__wave_down", "property: position; to: 0 -0.06 0; dur: 1200; easing: easeInOutQuad;");
+					}
+					else if (event.detail.name === "animation__unscale") {
+						el.parentNode.removeChild(el);
 					}
 				});
 				setTimeout(() => { el.setAttribute("mixin", "appearBounce"); }, 200)
@@ -112,7 +116,8 @@
 			color="black"
 			wrap-count="12"
 			value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Fermentum odio eu feugiat pretium nibh ipsum consequat nisl. Enim ut sem viverra aliquet eget sit amet tellus cras. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur. Id interdum velit laoreet id donec ultrices. Maecenas volutpat blandit aliquam etiam erat velit scelerisque in. Lacinia quis vel eros donec ac odio tempor orci. Aliquam faucibus purus in massa tempor nec feugiat. Venenatis lectus magna fringilla urna porttitor rhoncus dolor purus non. Nulla aliquet enim tortor at auctor. Vitae justo eget magna fermentum iaculis eu non diam phasellus. Ut tellus elementum sagittis vitae et leo duis ut. Maecenas accumsan lacus vel facilisis volutpat est velit egestas. Sed augue lacus viverra vitae."></a-text> -->
-		<a-entity gltf-model="#bubbleOrange" position="0 0 0" appear-bounce basic-click-handler button>
+		<a-entity position="0 2.25 -15" particle-system="preset: snow; particleCount: 600"></a-entity>
+		<a-entity gltf-model="#bubbleOrange" position="0 0 0" start-button button>
 			<a-text
 				font="assets\font\Gidole-Regular-msdf\Gidole-Regular-msdf.json"
 				color="#48220d"

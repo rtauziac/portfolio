@@ -36,9 +36,37 @@
 			init: function () {
 				console.log('initializing basic-click-handler');
 				var el = this.el;
-				el.addEventListener('click', function (event) {
+				el.addEventListener('click', event => {
 					console.log('Youpi!!!!');
 				});
+			}
+		})
+		AFRAME.registerComponent('appear-bounce', {
+			//dependencies: ['raycaster'],
+			init: function () {
+				var el = this.el;
+				el.setAttribute("scale", "0 0 0");
+				el.addEventListener("animationcomplete", event => {
+					if (event.detail.name === "animation__appear_bounce_scale") {
+						el.removeAttribute("animation__appear_bounce_scale");
+						el.addEventListener('click', event => {
+							el.removeAttribute("animation__wave_down");
+							el.removeAttribute("animation__wave_up");
+							el.setAttribute("animation__spin", "property: rotation; to: 0 360 0; dur: 1800; easing: easeOutElastic; elasticity: 12;")
+							el.setAttribute("animation__unscale", "property: scale; to: 0 0 0; delay: 1200; dur: 600; easing: easeInExpo;")
+						});
+						el.setAttribute("animation__wave_up", "property: position; to: 0 0.06 0; dur: 1200; easing: easeInOutQuad;");
+					}
+					if (event.detail.name === "animation__wave_down") {
+						el.removeAttribute("animation__wave_down");
+						el.setAttribute("animation__wave_up", "property: position; to: 0 0.06 0; dur: 1200; easing: easeInOutQuad;");
+					}
+					else if (event.detail.name === "animation__wave_up") {
+						el.removeAttribute("animation__wave_up");
+						el.setAttribute("animation__wave_down", "property: position; to: 0 -0.06 0; dur: 1200; easing: easeInOutQuad;");
+					}
+				});
+				setTimeout(() => { el.setAttribute("mixin", "appearBounce"); }, 200)
 			}
 		})
 	</script>
@@ -49,12 +77,16 @@
 		<a-assets>
 			<!-- register 3d assets -->
 			<a-asset-item id="smartphone" src="assets\3d\smartphone.gltf"></a-asset-item>
+			<a-asset-item id="bubbleOrange" src="assets\3d\bubble_orange.gltf"></a-asset-item>
 
 			<!-- register other assets -->
 			<!-- <a-asset-item id="gidole_fnt" src="assets\font\gidole.fnt"></a-asset-item> -->
 
 			<!-- register mixins -->
 			<a-mixin id="turntable" animation="property: rotation; to: 0 360 0; dur: 3400; easing: linear; loop: true;"></a-mixin>
+			<a-mixin id="appearBounce" animation__appear_bounce_scale="property: scale; from: 0 0 0; to: 1 1 1; dur: 1600; easing: easeOutElastic;"></a-mixin>
+			<!-- <a-mixin id="waveUp" animation__wave_up="property: position; to: 0 0.1 0; dur: 1200; easing: easeInOutQuad;"></a-mixin>
+			<a-mixin id="waveDown" animation__wave_down="property: position; to: 0 -0.1 0; dur: 1200; easing: easeInOutQuad;"></a-mixin> -->
 		</a-assets>
 
 		<!-- <a-box hello-world="message: Judy" position="-1 0.5 -3" rotation="0 45 0" animation="property: position; to: -1 1.5 -3; dur: 1000; easing: linear; loop: true" color="#4CC3D9"></a-box> -->
@@ -65,12 +97,12 @@
 		<!-- <a-sphere color="#ECECEC"></a-sphere> -->
 
 		<a-entity light="type: ambient; color: white;"></a-entity>
-		<a-entity camera position="0 0 0" wasd-controls look-controls>
+		<a-entity id="mainCamera" camera position="0 0 2" wasd-controls>
 			<a-entity cursor="rayOrigin: mouse;" raycaster="objects: [button]"></a-entity>
 		</a-entity>
-		<a-entity position="0 0 -0.2">
+		<!-- <a-entity position="0 0 -0.2">
 			<a-entity gltf-model="#smartphone" rotation="-45 0 0" basic-click-handler button></a-entity>
-		</a-entity>
+		</a-entity> -->
 		<!-- <a-text
 			position="0 0 -6"
 			scale="0.2 0.2 0.2"
@@ -80,6 +112,16 @@
 			color="black"
 			wrap-count="12"
 			value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Fermentum odio eu feugiat pretium nibh ipsum consequat nisl. Enim ut sem viverra aliquet eget sit amet tellus cras. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur. Id interdum velit laoreet id donec ultrices. Maecenas volutpat blandit aliquam etiam erat velit scelerisque in. Lacinia quis vel eros donec ac odio tempor orci. Aliquam faucibus purus in massa tempor nec feugiat. Venenatis lectus magna fringilla urna porttitor rhoncus dolor purus non. Nulla aliquet enim tortor at auctor. Vitae justo eget magna fermentum iaculis eu non diam phasellus. Ut tellus elementum sagittis vitae et leo duis ut. Maecenas accumsan lacus vel facilisis volutpat est velit egestas. Sed augue lacus viverra vitae."></a-text> -->
+		<a-entity gltf-model="#bubbleOrange" position="0 0 0" appear-bounce basic-click-handler button>
+			<a-text
+				font="assets\font\Gidole-Regular-msdf\Gidole-Regular-msdf.json"
+				color="#48220d"
+				align="center"
+				position="0 0.02 0.08"
+				scale="0.6 0.6 0.6"
+				negate="false"
+				value="Start"></a-text>
+		</a-entity>
 	</a-scene>
 </body>
 

@@ -9,6 +9,7 @@
 <body>
 	<script>
 		// register components
+		// examples
 		AFRAME.registerComponent('hello-world', {
 			schema: {
 				message: { type: 'string', default: 'World' }
@@ -42,15 +43,15 @@
 				});
 			}
 		})
+		// ====
 		AFRAME.registerComponent('start-button', {
-			//dependencies: ['raycaster'],
 			init: function () {
 				var el = this.el;
 				el.setAttribute("scale", "0 0 0");
 				el.addEventListener("animationcomplete", event => {
 					if (event.detail.name === "animation__appear_bounce_scale") {
 						el.removeAttribute("animation__appear_bounce_scale");
-						el.addEventListener('click', event => {
+						el.addEventListener("click", event => {
 							el.removeAttribute("animation__wave_down");
 							el.removeAttribute("animation__wave_up");
 							el.setAttribute("animation__spin", "property: rotation; to: 0 360 0; dur: 1600; easing: easeOutElastic; elasticity: 12;")
@@ -71,6 +72,32 @@
 					}
 				});
 				setTimeout(() => { el.setAttribute("mixin", "appearBounce"); }, 200)
+			}
+		})
+		AFRAME.registerComponent("text-reveal", {
+			dependencies: ["text"],
+			schema: {
+				characterDelay: { type: "number", default: 100 }
+			},
+			init: function() {
+				//console.log(el.getAttribute("text").value);
+				var el = this.el;
+				var textAttribute = el.getAttribute("text");
+				this.data.__textValue = textAttribute.value;
+				this.data.__textOffset = 0;
+				textAttribute.value = "";
+				el.setAttribute("text", textAttribute);
+				this.data.__offsetTimeout = setInterval(() => { this.data.__textOffset += this.data.__textValue.charAt(this.data.__textOffset) == '\\' ? 2 : 1; }, this.data.characterDelay);
+			},
+			tick: function() {
+				var el = this.el;
+				var textAttribute = el.getAttribute("text");
+				textAttribute.value = this.data.__textValue.substring(0, this.data.__textOffset);
+				el.setAttribute("text", textAttribute);
+				if (this.data.__textOffset == this.data.__textValue.length) {
+					el.dispatchEvent(new Event("endreveal"));
+					el.removeAttribute("text-reveal");
+				}
 			}
 		})
 	</script>
@@ -107,17 +134,20 @@
 		<!-- <a-entity position="0 0 -0.2">
 			<a-entity gltf-model="#smartphone" rotation="-45 0 0" basic-click-handler button></a-entity>
 		</a-entity> -->
-		<!-- <a-text
-			position="0 0 -6"
-			scale="0.2 0.2 0.2"
+		<a-text
+			position="-2 2 -2"
+			scale="1 1 1"
 			font="assets\font\Gidole-Regular-msdf\Gidole-Regular-msdf.json"
-			align="center"
+			align="left"
+			baseline="top"
 			negate="false"
 			color="black"
-			wrap-count="12"
-			value="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Fermentum odio eu feugiat pretium nibh ipsum consequat nisl. Enim ut sem viverra aliquet eget sit amet tellus cras. Faucibus interdum posuere lorem ipsum dolor sit amet consectetur. Id interdum velit laoreet id donec ultrices. Maecenas volutpat blandit aliquam etiam erat velit scelerisque in. Lacinia quis vel eros donec ac odio tempor orci. Aliquam faucibus purus in massa tempor nec feugiat. Venenatis lectus magna fringilla urna porttitor rhoncus dolor purus non. Nulla aliquet enim tortor at auctor. Vitae justo eget magna fermentum iaculis eu non diam phasellus. Ut tellus elementum sagittis vitae et leo duis ut. Maecenas accumsan lacus vel facilisis volutpat est velit egestas. Sed augue lacus viverra vitae."></a-text> -->
-		<a-entity position="0 2.25 -15" particle-system="preset: snow; particleCount: 600"></a-entity>
-		<a-entity gltf-model="#bubbleOrange" position="0 0 0" start-button button>
+			wrap-count="40"
+			value="Hello,\nI’m a mobile developer\nwith a strong passion\nfor video games\nand all other medias\nof expression" text-reveal="characterDelay: 75;"></a-text>
+		<!-- <a-entity
+			position="0 0 0"
+			particle-system="particleCount: 10000; maxParticleCount: 100; maxAge: 1; type: 2; texture: assets\textures\squarex32.png; velocityValue: 0 1 0; velocitySpread: 2 2 2; accelerationValue: 0 -1.5 0; accelerationSpread: 0 0 0; color: #FFFFFF; opacity: 1, 0; size: 0.3; blending: 1;"></a-entity> -->
+		<!-- <a-entity gltf-model="#bubbleOrange" position="0 0 0" start-button button>
 			<a-text
 				font="assets\font\Gidole-Regular-msdf\Gidole-Regular-msdf.json"
 				color="#48220d"
@@ -126,7 +156,7 @@
 				scale="0.6 0.6 0.6"
 				negate="false"
 				value="Start"></a-text>
-		</a-entity>
+		</a-entity> -->
 	</a-scene>
 </body>
 

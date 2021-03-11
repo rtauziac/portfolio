@@ -60,7 +60,6 @@
 				startButton: function() {
 					const buttongltf = this._createCustomEntity("a-entity", {
 						["gltf-model"]: "#bubbleOrange",
-						position: "0 0 0",
 						["start-button"]: "",
 						button: ""
 					});
@@ -75,25 +74,92 @@
 					})
 					buttongltf.appendChild(text);
 					return buttongltf;
+				},
+				introText: function() {
+					const aText = this._createCustomEntity("a-text", {
+						font: "assets/font/Gidole-Regular-msdf/Gidole-Regular-msdf.json",
+						align: "left",
+						baseline: "top",
+						negate: "false",
+						color: "#462a19",
+						["wrap-count"]: "40",
+						value: document.getElementById("introtext").innerHTML,
+						["text-reveal"]: "characterDelay: 75;"
+					});
+					return aText;
+				},
+				smartphone: function() {
+					const phone = this._createCustomEntity("a-entity", {
+						["gltf-model"]: "#smartphone",
+					});
+					return phone;
 				}
 			},
 			_loadStep: function(step) {
-				switch (step) {
+				const currentStep = (function(step) {
+					switch (step) {
 					case 0:
-						const startButton = this._entities.startButton.call(this);
+						var startButton = this._entities.startButton.call(this);
 						startButton.addEventListener("destroyed", (function() {
 							this._loadStep(step + 1);
 						}).bind(this));
-						this.data.__stepHolder.appendChild(startButton);
-						break;
+
+						return startButton;
 					case 1:
-						console.log("step 1");
-						break;
-				}
+						const holder = this._createCustomEntity.call(this, "a-entity");
+
+						const introText = this._entities.introText.call(this);
+						introText.addEventListener("destroyed", (function() {
+							this._loadStep(step + 1);
+						}).bind(this));
+						introText.setAttribute("position", "-1.07675 0.76176 0");
+
+						const textPivot = this._createCustomEntity.call(this, "a-entity");
+						textPivot.appendChild(introText);
+						introText.addEventListener("endreveal", event => {
+							setTimeout(() => {
+								textPivot.setAttribute("animation__slide_up", "property: position; to: 0 2 0; dur: 1200; easing: easeInQuart;");
+								textPivot.setAttribute("animation__tilt_up", "property: rotation; to: -90 0 0; dur: 1200; easing: easeInExpo;")
+								textPivot.addEventListener("animationcomplete", event => {
+									if (event.detail.name == "animation__slide_up") {
+										textPivot.dispatchEvent(new Event("endslideup"));
+										textPivot.parentNode.removeChild(textPivot);
+									}
+								});
+							}, 1300);
+						});
+						
+						const smartphone = this._entities.smartphone.call(this);
+						smartphone.setAttribute("scale", "5 5 5");
+						
+						const phonePivot = this._createCustomEntity.call(this, "a-entity");
+						phonePivot.appendChild(smartphone);
+						phonePivot.setAttribute("visible", "false");
+						//  TODO: make phone appear after text disapears
+						textPivot.addEventListener("endslideup", event => {
+							phonePivot.setAttribute("visible", "true");
+							phonePivot.setAttribute("animation__slide_up", "property: position; to: 0 0 0; dur: 1200; easing: easeOutQuart;");
+							phonePivot.setAttribute("animation__tilt_up", "property: rotation; to: 0 0 0; dur: 1200; easing: easeOutExpo;")
+							phonePivot.addEventListener("animationcomplete", event => {
+								if (event.detail.name == "animation__tilt_up") {	
+									phonePivot.setAttribute("animation__scale_back", "property: scale; to: 2 2 2; dur: 800; easing: easeOutBack;");
+								}
+							});
+						});
+						phonePivot.setAttribute("position", "0 -2 0");
+						phonePivot.setAttribute("rotation", "90 0 0");
+						
+						holder.appendChild(textPivot);
+						holder.appendChild(phonePivot);
+						
+						return holder;
+					};
+				}).bind(this)(step)
+				this.data.__stepHolder.appendChild(currentStep);
 			},
 			_createCustomEntity: function(entity, attributes) {
 				const newEntity = document.createElement(entity);
-				for (const [key, value] of Object.entries(attributes)) {
+				for (const [key, value] of Object.entries(attributes || {})) {
 					newEntity.setAttribute(key, value);
 				}
 				return newEntity;
@@ -134,7 +200,9 @@
 						el.setAttribute("animation__wave_down", "property: position; to: 0 -0.06 0; dur: 1200; easing: easeInOutQuad;");
 					}
 					else if (event.detail.name === "animation__unscale") {
-						el.dispatchEvent(new Event("destroyed"));
+						setTimeout(() => {
+							el.dispatchEvent(new Event("destroyed"));
+						}, 1000);
 						el.parentNode.removeChild(el);
 					}
 				});
@@ -147,7 +215,6 @@
 				characterDelay: { type: "number", default: 100 }
 			},
 			init: function() {
-				//console.log(el.getAttribute("text").value);
 				var el = this.el;
 				var textAttribute = el.getAttribute("text");
 				this.data.__textValue = textAttribute.value;
@@ -170,8 +237,11 @@
 	</script>
 
 	<div style="background-color: lightpink; width: 100%; height: 100%;"></div>
+	<div visibility="hidden">
+		<span id="introtext">Hello,\nI’m a mobile developer\nwith a strong passion\nfor video games\nand all other mediums\nof expression</span>
+	</div>
 
-	<a-scene stats light="defaultLightsEnabled: false">
+	<a-scene light="defaultLightsEnabled: false">
 		<a-assets>
 			<!-- register 3d assets -->
 			<a-asset-item id="smartphone" src="assets/3d/smartphone.gltf"></a-asset-item>
@@ -196,14 +266,14 @@
 		<!-- <a-sphere color="#ECECEC"></a-sphere> -->
 
 		<a-entity light="type: ambient; color: white;"></a-entity>
-		<a-entity id="mainCamera" camera position="0 0 2" wasd-controls>
+		<a-entity id="mainCamera" camera position="0 0 2">
 			<a-entity cursor="rayOrigin: mouse;" raycaster="objects: [button]"></a-entity>
 		</a-entity>
 		<!-- <a-entity position="0 0 -0.2">
 			<a-entity gltf-model="#smartphone" rotation="-45 0 0" basic-click-handler button></a-entity>
 		</a-entity> -->
 
-		<a-entity id="stepHolder" portfolio-manager="step: 0;"></a-entity>
+		<a-entity id="stepHolder" portfolio-manager="step: 1;"></a-entity>
 
 		<!-- <a-text
 			position="-2 2 -2"

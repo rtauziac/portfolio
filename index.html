@@ -58,7 +58,7 @@
 			_entities: {
 				startButton: function() {
 					const buttongltf = this._createCustomEntity("a-entity", {
-						["gltf-model"]: "#bubbleOrange",
+						["gltf-model"]: "#bubbleOrangeGLTF",
 						["start-button"]: "",
 						button: ""
 					});
@@ -89,25 +89,32 @@
 				},
 				smartphone: function() {
 					const phone = this._createCustomEntity("a-entity", {
-						["gltf-model"]: "#smartphone",
+						["gltf-model"]: "#smartphoneGLTF",
 					});
 					return phone;
 				},
 				steeringWheel: function() {
 					const steeringWheel = this._createCustomEntity("a-entity", {
-						["gltf-model"]: "#steeringwheel"
+						["gltf-model"]: "#steeringwheelGLTF",
 					})
 					return steeringWheel;
+				},
+				tin: function() {
+					const tin = this._createCustomEntity("a-entity", {
+						["gltf-model"]: "#tinGLTF",
+					})
+					return tin;
 				}
 			},
 			_loadStep: function(step) {
 				const currentStep = (function(step) {
 					switch (step) {
 					case -1:
-						var steeringWheel = this._entities.steeringWheel.call(this);
-						steeringWheel.setAttribute("scale", "3 3 3");
-						steeringWheel.setAttribute("mixin", "turntable");
-						return steeringWheel
+						var dumb = this._entities.steeringWheel.call(this);
+						dumb.setAttribute("scale", "3 3 3");
+						dumb.setAttribute("mixin", "turntable");
+						return dumb
+
 					case 0:
 						var startButton = this._entities.startButton.call(this);
 						startButton.addEventListener("destroyed", (function() {
@@ -115,20 +122,23 @@
 						}).bind(this));
 
 						return startButton;
-					case 1:
-						const holder = this._createCustomEntity.call(this, "a-entity");
 
+					case 1:
+						this._setBackgroundColor.call(this, "#ADD8E6");
+						const holder01 = this._createCustomEntity.call(this, "a-entity");
 						const introText = this._entities.introText.call(this);
 						introText.addEventListener("destroyed", (function() {
 							this._loadStep(step + 1);
 						}).bind(this));
 						introText.setAttribute("position", "-1.07675 0.76176 0");
 
-						const textPivot = this._createCustomEntity.call(this, "a-entity");
+						const textPivot = this._createCustomEntity.call(this, "a-entity", {
+							scale: "0.5 0.5 0.5"
+						});
 						textPivot.appendChild(introText);
 						introText.addEventListener("endreveal", event => {
 							setTimeout(() => {
-								textPivot.setAttribute("animation__slide_up", "property: position; to: 0 2 0; dur: 1200; easing: easeInQuart;");
+								textPivot.setAttribute("animation__slide_up", "property: position; to: 0 1 0; dur: 1200; easing: easeInQuart;");
 								textPivot.setAttribute("animation__tilt_up", "property: rotation; to: -90 0 0; dur: 1200; easing: easeInExpo;")
 								textPivot.addEventListener("animationcomplete", event => {
 									if (event.detail.name == "animation__slide_up") {
@@ -139,30 +149,91 @@
 							}, 1300);
 						});
 						
-						const smartphone = this._entities.smartphone.call(this);
-						smartphone.setAttribute("scale", "5 5 5");
+						holder01.appendChild(textPivot);
 						
+						textPivot.addEventListener("endslideup", (function() {
+							this._loadStep(step + 1);
+						}).bind(this));
+
+						return holder01;
+					
+					case 2:
+						this._setBackgroundColor.call(this, "#F08080");
+						const holder02 = this._createCustomEntity.call(this, "a-entity");
+
 						const phonePivot = this._createCustomEntity.call(this, "a-entity");
+						const smartphone = this._entities.smartphone.call(this);
+						const steeringWheelPivot = this._createCustomEntity.call(this, "a-entity");
+						const steeringWheel = this._entities.steeringWheel.call(this);
+						const animalPivot = this._createCustomEntity.call(this, "a-entity");
+						const tinPivot = this._createCustomEntity.call(this, "a-entity");
+						const tin = this._entities.tin.call(this);
+
+						holder02.appendChild(phonePivot);
+						holder02.appendChild(steeringWheelPivot);
+						
 						phonePivot.appendChild(smartphone);
-						phonePivot.setAttribute("visible", "false");
-						//  TODO: make phone appear after text disapears
-						textPivot.addEventListener("endslideup", event => {
-							phonePivot.setAttribute("visible", "true");
-							phonePivot.setAttribute("animation__slide_up", "property: position; to: 0 0 0; dur: 1200; easing: easeOutQuart;");
-							phonePivot.setAttribute("animation__tilt_up", "property: rotation; to: 0 0 0; dur: 1200; easing: easeOutExpo;")
-							phonePivot.addEventListener("animationcomplete", event => {
-								if (event.detail.name == "animation__tilt_up") {	
-									phonePivot.setAttribute("animation__scale_back", "property: scale; to: 2 2 2; dur: 800; easing: easeOutBack;");
-								}
-							});
+						phonePivot.setAttribute("animation__slide_up", "property: position; to: 0 0 0; dur: 1200; easing: easeOutQuart;");
+						phonePivot.setAttribute("animation__tilt_up", "property: rotation; to: 0 0 0; dur: 1200; easing: easeOutExpo;")
+						phonePivot.addEventListener("animationcomplete", event => {
+							if (event.detail.name == "animation__tilt_up") {
+								phonePivot.setAttribute("animation__tilt_face_up", "property: rotation; to: -50 0 0; easing: easeInOutBack");
+								holder02.setAttribute("animation__move_a_bit_down", "property: position; to:  0 -0.1 0.5; easing: easeInOutQuad");
+							}
 						});
-						phonePivot.setAttribute("position", "0 -2 0");
+						phonePivot.setAttribute("position", "0 -1 0");
 						phonePivot.setAttribute("rotation", "90 0 0");
-						
-						holder.appendChild(textPivot);
-						holder.appendChild(phonePivot);
-						
-						return holder;
+
+						steeringWheelPivot.setAttribute("scale", "0 0 0");
+						steeringWheelPivot.setAttribute("rotation", "0 20 0")
+						steeringWheelPivot.appendChild(steeringWheel);
+						steeringWheelPivot.setAttribute("visible", false);
+
+						holder02.appendChild(animalPivot);
+						animalPivot.appendChild(tinPivot);
+						tinPivot.appendChild(tin);
+
+						animalPivot.setAttribute("visible", false);
+						animalPivot.setAttribute("scale", "0 0 0");
+
+						tinPivot.setAttribute("position", "-0.08 0 0");
+
+						tin.setAttribute("scale", "0.25 0.25 0.25");
+						tin.setAttribute("rotation", "30 0 0");
+
+						holder02.addEventListener("animationcomplete", event => {
+							if (event.detail.name == "animation__move_a_bit_down") {
+								steeringWheelPivot.setAttribute("visible", true);
+								steeringWheelPivot.setAttribute("animation__pop_phone_move", "property: position; to: -0.25 0.1 -0.1; delay: 200; dur: 1500; easing: easeOutElastic; elasticity: 20;");
+								steeringWheelPivot.setAttribute("animation__pop_phone_scale", "property: scale; from: 0 0 0; to: 0.25 0.25 0.25; delay: 200; dur: 1500; easing: easeOutElastic; elasticity: 20;");
+
+								setTimeout(() => {
+									steeringWheel.setAttribute("animation__rotate_wheel_start", "property: rotation; to: 0 0 80; dur: 400; easing: easeInOutQuad;");
+									steeringWheel.addEventListener("animationcomplete" , event => {
+										if (event.detail.name == "animation__rotate_wheel_start") {
+											steeringWheel.setAttribute("animation__rotate_wheel_back", "property: rotation; to: 0 0 0; delay: 100; dur: 1200; easing: easeOutElastic;");
+										}
+										else if (event.detail.name == "animation__rotate_wheel_back") {
+											steeringWheel.setAttribute("animation__bounce_wheel_start", "property: scale; to: 1.3 1.3 1.3; dur: 120; easing: easeOutQuad;");
+										}
+										else if (event.detail.name == "animation__bounce_wheel_start") {
+											steeringWheel.setAttribute("animation__bounce_wheel_back", "property: scale; to: 1 1 1; dur: 700; easing: easeOutElastic;");
+										}
+										else if (event.detail.name == "animation__bounce_wheel_back") {
+											holder02.dispatchEvent(new Event("animal"));
+										}
+									});
+								}, 1500);
+							}
+						});
+
+						holder02.addEventListener("animal", event => {
+								animalPivot.setAttribute("visible", true);
+								animalPivot.setAttribute("animation__pop_animal_move", "property: position; to: 0 0.2 -0.15; dur: 1500; easing: easeOutElastic; elasticity: 20;");
+								animalPivot.setAttribute("animation__pop_animal_scale", "property: scale; from: 0 0 0; to: 1 1 1; dur: 1500; easing: easeOutElastic; elasticity: 20;");
+						});
+
+						return holder02;
 					};
 				}).bind(this)(step)
 				this.data.__stepHolder.appendChild(currentStep);
@@ -174,6 +245,11 @@
 				}
 				return newEntity;
 			},
+			_setBackgroundColor: function(color) {
+				const el = document.getElementById("skybox");
+				el.removeAttribute("animation__background_color");
+				el.setAttribute("animation__background_color", `property: material.color; to: ${color}; dur: 1200; easing: easeOutQuad;`);
+			}
 		});
 		AFRAME.registerComponent('start-button', {
 			init: function () {
@@ -187,21 +263,21 @@
 							el.setAttribute("animation__spin", "property: rotation; to: 0 360 0; dur: 1600; easing: easeOutElastic; elasticity: 12;")
 							el.setAttribute("animation__unscale", "property: scale; to: 0 0 0; delay: 1000; dur: 600; easing: easeInExpo;")
 						});
-						el.setAttribute("animation__wave_up", "property: position; to: 0 0.06 0; dur: 1200; easing: easeInOutQuad;");
+						el.setAttribute("animation__wave_up", "property: position; to: 0 0.03 0; dur: 1200; easing: easeInOutQuad;");
 					}
 					if (event.detail.name === "animation__wave_down") {
 						el.removeAttribute("animation__wave_down");
-						el.setAttribute("animation__wave_up", "property: position; to: 0 0.06 0; dur: 1200; easing: easeInOutQuad;");
+						el.setAttribute("animation__wave_up", "property: position; to: 0 0.03 0; dur: 1200; easing: easeInOutQuad;");
 					}
 					else if (event.detail.name === "animation__wave_up") {
 						el.removeAttribute("animation__wave_up");
-						el.setAttribute("animation__wave_down", "property: position; to: 0 -0.06 0; dur: 1200; easing: easeInOutQuad;");
+						el.setAttribute("animation__wave_down", "property: position; to: 0 -0.03 0; dur: 1200; easing: easeInOutQuad;");
 					}
 					else if (event.detail.name === "animation__unscale") {
 						setTimeout(() => {
 							el.dispatchEvent(new Event("destroyed"));
+							el.parentNode.removeChild(el);
 						}, 1000);
-						el.parentNode.removeChild(el);
 					}
 				});
 				el.setAttribute("mixin", "appearBounce");
@@ -232,19 +308,36 @@
 				}
 			}
 		});
-	</script>
+		
+		// register primitives
+		AFRAME.registerPrimitive("a-skybox", {
+			defaultComponents: {
+				["obj-model"]: {
+					obj: "#skyboxOBJ"
+				},
+				material: {
+					color: "black"
+				}
+			},
+			mappings: {
+				color: "material.color"
+			}
+		});
+</script>
 
-	<div style="background-color: lightpink; width: 100%; height: 100%;"></div>
+	<!-- <div style="background-color: lightpink; width: 100%; height: 100%;"></div> -->
 	<div visibility="hidden">
 		<span id="introtext">Hello,\nI’m a mobile developer\nwith a strong passion\nfor video games\nand all other mediums\nof expression</span>
 	</div>
 
-	<a-scene light="defaultLightsEnabled: false">
+	<a-scene light="defaultLightsEnabled: false" stats>
 		<a-assets>
 			<!-- register 3d assets -->
-			<a-asset-item id="smartphone" src="assets/3d/smartphone.gltf"></a-asset-item>
-			<a-asset-item id="bubbleOrange" src="assets/3d/bubble_orange.gltf"></a-asset-item>
-			<a-asset-item id="steeringwheel" src="assets/3d/steering_wheel.gltf"></a-asset-item>
+			<a-asset-item id="skyboxOBJ" src="assets/3d/skybox.obj"></a-asset-item>
+			<a-asset-item id="smartphoneGLTF" src="assets/3d/smartphone.gltf"></a-asset-item>
+			<a-asset-item id="bubbleOrangeGLTF" src="assets/3d/bubble_orange.gltf"></a-asset-item>
+			<a-asset-item id="steeringwheelGLTF" src="assets/3d/steering_wheel.gltf"></a-asset-item>
+			<a-asset-item id="tinGLTF" src="assets/3d/tin.gltf"></a-asset-item>
 
 			<!-- register images -->
 			<img id="squarex32" src="assets/textures/squarex32.png"></img>
@@ -257,8 +350,6 @@
 			animation="property: rotation; to: 0 360 0; dur: 3400; easing: linear; loop: true;" />
 			<a-mixin id="appearBounce"
 			animation__appear_bounce_scale="property: scale; from: 0 0 0; to: 1 1 1; dur: 1600; easing: easeOutElastic;" />
-
-			<a-mixin id="">
 		</a-assets>
 
 		<!-- <a-box hello-world="message: Judy" position="-1 0.5 -3" rotation="0 45 0" animation="property: position; to: -1 1.5 -3; dur: 1000; easing: linear; loop: true" color="#4CC3D9"></a-box> -->
@@ -269,38 +360,12 @@
 		<!-- <a-sphere color="#ECECEC"></a-sphere> -->
 
 		<a-entity light="type: ambient;"></a-entity>
-		<a-entity id="mainCamera" camera position="0 0 2">
+		<a-entity id="mainCamera" camera="fov: 80;" position="0 0 1" wasd-controls="acceleration: 3;" look-controls>
+			<a-skybox id="skybox" scale="150 150 150" color="#FFA07A"></a-skybox>
 			<a-entity cursor="rayOrigin: mouse;" raycaster="objects: [button]"></a-entity>
 		</a-entity>
-		<!-- <a-entity position="0 0 -0.2">
-			<a-entity gltf-model="#smartphone" rotation="-45 0 0" basic-click-handler button></a-entity>
-		</a-entity> -->
 
-		<a-entity id="stepHolder" portfolio-manager="step: 0;"></a-entity>
-
-		<!-- <a-text
-			position="-2 2 -2"
-			scale="1 1 1"
-			font="assets\font\Gidole-Regular-msdf\Gidole-Regular-msdf.json"
-			align="left"
-			baseline="top"
-			negate="false"
-			color="#462a19"
-			wrap-count="40"
-			value="Hello,\nI’m a mobile developer\nwith a strong passion\nfor video games\nand all other mediums\nof expression" text-reveal="characterDelay: 75;"></a-text> -->
-		<!-- <a-entity
-			position="0 0 0"
-			particle-system="particleCount: 10000; maxParticleCount: 100; maxAge: 1; type: 2; texture: assets\textures\squarex32.png; velocityValue: 0 1 0; velocitySpread: 2 2 2; accelerationValue: 0 -1.5 0; accelerationSpread: 0 0 0; color: #FFFFFF; opacity: 1, 0; size: 0.3; blending: 1;"></a-entity> -->
-		<!-- <a-entity gltf-model="#bubbleOrange" position="0 0 0" start-button button>
-			<a-text
-				font="assets\font\Gidole-Regular-msdf\Gidole-Regular-msdf.json"
-				color="#48220d"
-				align="center"
-				position="0 0.02 0.08"
-				scale="0.6 0.6 0.6"
-				negate="false"
-				value="Start"></a-text>
-		</a-entity> -->
+		<a-entity id="stepHolder" portfolio-manager="step: 2;"></a-entity>
 	</a-scene>
 </body>
 

@@ -104,16 +104,21 @@
 						["gltf-model"]: "#tinGLTF",
 					})
 					return tin;
-				}
+				},
+				tent: function() {
+					const tent = this._createCustomEntity("a-entity", {
+						["gltf-model"]: "#tentGLTF",
+					})
+					return tent;
+				},
 			},
 			_loadStep: function(step) {
 				const currentStep = (function(step) {
 					switch (step) {
 					case -1:
-						var dumb = this._entities.steeringWheel.call(this);
-						dumb.setAttribute("scale", "3 3 3");
-						dumb.setAttribute("mixin", "turntable");
-						return dumb
+						var dumb = this._entities.tent.call(this);
+						
+						return dumb;
 
 					case 0:
 						var startButton = this._entities.startButton.call(this);
@@ -168,6 +173,11 @@
 						const animalPivot = this._createCustomEntity.call(this, "a-entity");
 						const tinPivot = this._createCustomEntity.call(this, "a-entity");
 						const tin = this._entities.tin.call(this);
+						const tinParticles = this._createCustomEntity.call(this, "a-entity", {
+							"particles": "texture: assets/textures/squarex32.png; color: blue; velocity: 0 10 0; velocity-spread: 2 0 2; acceleration: 0 -10 0"
+						});
+						const tentPivot = this._createCustomEntity.call(this, "a-entity");
+						const tent = this._entities.tent.call(this);
 
 						holder02.appendChild(phonePivot);
 						holder02.appendChild(steeringWheelPivot);
@@ -185,13 +195,14 @@
 						phonePivot.setAttribute("rotation", "90 0 0");
 
 						steeringWheelPivot.setAttribute("scale", "0 0 0");
-						steeringWheelPivot.setAttribute("rotation", "0 20 0")
+						steeringWheelPivot.setAttribute("rotation", "0 20 0");
 						steeringWheelPivot.appendChild(steeringWheel);
 						steeringWheelPivot.setAttribute("visible", false);
 
 						holder02.appendChild(animalPivot);
 						animalPivot.appendChild(tinPivot);
 						tinPivot.appendChild(tin);
+						tinPivot.appendChild(tinParticles);
 
 						animalPivot.setAttribute("visible", false);
 						animalPivot.setAttribute("scale", "0 0 0");
@@ -200,6 +211,11 @@
 
 						tin.setAttribute("scale", "0.25 0.25 0.25");
 						tin.setAttribute("rotation", "30 0 0");
+
+						holder02.appendChild(tentPivot);
+						tentPivot.appendChild(tent);
+						tent.setAttribute("scale", "0 0 0");
+						tentPivot.setAttribute("visible", false);
 
 						holder02.addEventListener("animationcomplete", event => {
 							if (event.detail.name == "animation__move_a_bit_down") {
@@ -228,11 +244,40 @@
 						});
 
 						holder02.addEventListener("animal", event => {
-								animalPivot.setAttribute("visible", true);
-								animalPivot.setAttribute("animation__pop_animal_move", "property: position; to: 0 0.2 -0.15; dur: 1500; easing: easeOutElastic; elasticity: 20;");
-								animalPivot.setAttribute("animation__pop_animal_scale", "property: scale; from: 0 0 0; to: 1 1 1; dur: 1500; easing: easeOutElastic; elasticity: 20;");
+							animalPivot.setAttribute("visible", true);
+							animalPivot.setAttribute("animation__pop_animal_move", "property: position; to: 0 0.2 -0.15; dur: 1500; easing: easeOutElastic; elasticity: 20;");
+							animalPivot.setAttribute("animation__pop_animal_scale", "property: scale; from: 0 0 0; to: 1 1 1; dur: 1500; easing: easeOutElastic; elasticity: 20;");
+							animalPivot.addEventListener("animationcomplete", event => {
+								if (event.detail.name == "animation__pop_animal_scale") {
+									holder02.dispatchEvent(new Event("tent"));
+								}
+							})
 						});
 
+						holder02.addEventListener("tent", event => {
+							tentPivot.setAttribute("visible", true);
+							tentPivot.setAttribute("animation__pop_tent_move", "property: position; to: 0.25 0.1 -0.1; dur: 1200; easing: easeOutElastic; elasticity: 20;");
+							tent.setAttribute("animation__pop_tent_scale", "property: scale; to: 0.12 0.12 0.12; dur: 1200; easing: easeOutElastic; elasticity: 20;");
+							tent.setAttribute("rotation", "30 220 -15");
+							tent.setAttribute("animation__pop_tent_rotation", "property: rotation; to: 30 -30 0; dur: 1500; easing: easeOutElastic;");
+							tent.addEventListener("animationcomplete", event => {
+								if (event.detail.name == "animation__pop_tent_rotation") {
+									holder02.dispatchEvent(new Event("close"));
+								}
+							});
+						});
+
+						holder02.addEventListener("close", event => {
+							holder02.setAttribute("animation__close_rotation", "property: rotation; to: 0 0 180; dur: 1200; easing: easeInExpo;");
+							holder02.setAttribute("animation__close_scale", "property: scale; to: 0 0 0; delay: 300; dur: 900; easing: easeInExpo;");
+							holder02.addEventListener("animationcomplete", event => {
+								if (event.detail.name == "animation__close_rotation") {
+									holder02.dispatchEvent(new Event("destroy"));
+									holder02.parentNode.removeChild(holder02);
+								}
+							});
+						});
+						
 						return holder02;
 					};
 				}).bind(this)(step)
@@ -243,6 +288,7 @@
 				for (const [key, value] of Object.entries(attributes || {})) {
 					newEntity.setAttribute(key, value);
 				}
+
 				return newEntity;
 			},
 			_setBackgroundColor: function(color) {
@@ -260,8 +306,8 @@
 						el.addEventListener("click", event => {
 							el.removeAttribute("animation__wave_down");
 							el.removeAttribute("animation__wave_up");
-							el.setAttribute("animation__spin", "property: rotation; to: 0 360 0; dur: 1600; easing: easeOutElastic; elasticity: 12;")
-							el.setAttribute("animation__unscale", "property: scale; to: 0 0 0; delay: 1000; dur: 600; easing: easeInExpo;")
+							el.setAttribute("animation__spin", "property: rotation; to: 0 360 0; dur: 1600; easing: easeOutElastic; elasticity: 12;");
+							el.setAttribute("animation__unscale", "property: scale; to: 0 0 0; delay: 1000; dur: 600; easing: easeInExpo;");
 						});
 						el.setAttribute("animation__wave_up", "property: position; to: 0 0.03 0; dur: 1200; easing: easeInOutQuad;");
 					}
@@ -338,6 +384,7 @@
 			<a-asset-item id="bubbleOrangeGLTF" src="assets/3d/bubble_orange.gltf"></a-asset-item>
 			<a-asset-item id="steeringwheelGLTF" src="assets/3d/steering_wheel.gltf"></a-asset-item>
 			<a-asset-item id="tinGLTF" src="assets/3d/tin.gltf"></a-asset-item>
+			<a-asset-item id="tentGLTF" src="assets/3d/tent.gltf"></a-asset-item>
 
 			<!-- register images -->
 			<img id="squarex32" src="assets/textures/squarex32.png"></img>
@@ -365,7 +412,7 @@
 			<a-entity cursor="rayOrigin: mouse;" raycaster="objects: [button]"></a-entity>
 		</a-entity>
 
-		<a-entity id="stepHolder" portfolio-manager="step: 2;"></a-entity>
+		<a-entity id="stepHolder" portfolio-manager="step: 0;"></a-entity>
 	</a-scene>
 </body>
 
